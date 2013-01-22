@@ -11,6 +11,7 @@ module memory(
 	
 	initial begin
 		handledX <= 0;
+		waiting_ret_finished <= 0;
 	end
 	
 	assign memDest = (icode == 4 || icode == 5 || icode == 'hA || icode == 8) ? valE : valA;
@@ -84,6 +85,8 @@ module memory(
 					rB_out <= rB;
 					valE_out <= valE;
 					
+					waiting_ret_finished <= icode == 9;
+					pc_from_ret <= valM;
 				end
 				5: begin
 					stall <= 0;
@@ -95,6 +98,8 @@ module memory(
 					rB_out <= rB;
 					valE_out <= valE;
 			
+					waiting_ret_finished <= icode == 9;
+					pc_from_ret <= valM;
 				end
 			endcase
 		end

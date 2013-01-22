@@ -1,14 +1,20 @@
-module fetch();
+module fetch(pc);
 	initial begin
 		handledX <= 0;
 		size <= 50;
+		waiting_ret <= 0;
 	end
 	
 	always @ (posedge clock) begin
-		if (read_blocked) begin
+		if (read_blocked || waiting_ret && ~ waiting_ret_finished) begin
 			//stall etc
 		end
 		else begin
+			if (waiting_ret) begin
+				pc <= pc_from_ret;
+				handledX <= 0;
+			end
+		
 			if (handledX < size) begin
 				stall <= 1;
 			
@@ -20,7 +26,7 @@ module fetch();
 								  ((icode == 2 || icode == 6 || icode == 'hA || icode == 'hB) ? 2 :
 								  ((icode ==  7 || icode == 8) ? 5 : 6));
 						aligned <= pc % 2 == 0;
-						handledX <= handledX + 2 - (pc % 2);
+						handledX <= 2 - (pc % 2);
 					end
 					1: begin
 						inst[7:0] <= valueRead[15:8];
@@ -53,11 +59,12 @@ module fetch();
 				stall <= 0;
 				read <= 0;
 				handledX <= 0;
-				pc <= pc + size;
-				ret_lock <= 1;
+				waiting_ret <= icode == 9; 
 				
 				case (size)
 					1: begin
+						pc <= pc + 1;
+					
 						if (aligned) begin
 							icode <= valueRead[3:0];
 							ifun <= valueRead[7:4]; 
@@ -94,8 +101,26 @@ module fetch();
 							ifun <= inst[7:4];
 							valC <= {valueRead[15:0], inst[23:8]};
 						end
+						
+						if (icode == 7) begin
+							//jmp
+							pred <= branch_pred(pc) || ifun == 0; //if it is a (inconditional) jmp then of course the prediction should be 1 (taken)
+							
+							if (pred) begin
+								pc <= valC;
+							end 
+							else begin
+								pc <= pc + 5;
+							end
+						end
+						else begin
+							//call
+							pc <= valC;
+						end
 					end
 					6: begin
+						pc <= pc + 6;
+						
 						if (aligned) begin
 							icode <= inst[3:0];
 							ifun <= inst[7:4];

@@ -1,4 +1,8 @@
 module execute();
+	initial begin
+		Cnd <= 0;
+	end
+
 	always @ (posedge clock) begin
 		case (icode)
 			2: begin
