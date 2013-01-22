@@ -5,6 +5,21 @@ module write_back(
 	//external
 	clock, regWrite1, regWrite2, regReg1, regReg2, regValue1, regValue2
 );
+    
+    input   icode       [3:0];
+    input   rA          [3:0];
+    input   rB          [3:0];
+    input   valE        [31:0];
+    input   valM        [31:0];
+
+    input   clock;
+    output  regWrite1;
+    output  regWrite2;
+    output  regReg1     [3:0];
+    output  regReg2     [3:0];
+    output  regValue1   [31:0];
+    output  regValue2   [31:0];
+
 	always @ (posedge clock) begin
 		case (icode)
 			'h0: begin
