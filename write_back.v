@@ -1,9 +1,20 @@
 
-module write_back(clock, icode, rB, valE, valM, regWrite1, regReg1, regValue1, regWrite2, regReg2, regValue2);
+module write_back(
+	//from previous stage
+	icode, rA, rB, valE, valM
+	//external
+	clock, regWrite1, regWrite2, regReg1, regReg2, regValue1, regValue2
+);
 	always @ (posedge clock) begin
 		case (icode)
-			'h0:
-			'h1:
+			'h0: begin
+				regWrite1 <= 0;
+				regWrite2 <= 0;
+			end
+			'h1: begin
+				regWrite1 <= 0;
+				regWrite2 <= 0;
+			end
 			'h2: begin
 				regWrite1 <= 1;
 				regReg1 <= rB;
