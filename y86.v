@@ -8,7 +8,7 @@
 `include "memInterface.v"
 `include "registers.v"
 `include "SRAM_sim.v"
-
+`include "forward.v"
 //module y86(CLOCK_25, CLOCK_50, SRAM_ADDR, SRAM_DQ, SRAM_WE_N, SRAM_OE_N, SRAM_CE_N, SRAM_UB_N, SRAM_LB_N);
 module y86();
 	
@@ -108,6 +108,9 @@ module y86();
 	
 	wire lb_from_memory, hb_from_memory, lb_to_mi, hb_to_mi;
 
+    wire [31:0] fwd_regAValue;
+    wire [31:0] fwd_regBValue;
+
 	reg clock_50;
 
 	initial begin
@@ -146,9 +149,20 @@ module y86();
 		decode_icode, decode_ifun, decode_rA, decode_rB, decode_valA, decode_valB, decode_valC, decode_valP, decode_pred
 	);
 	
+    fwd_2_execute fwd2e(
+        //applyMemFwd, mem_regA, mem_regAValue, mem_regB, mem_regBValue, 
+        1, mem_rA, mem_valM, mem_rB, mem_valE
+        //applyEx2Fwd, ex2_regA, ex2_regAValue
+        1, exe_rB, exe_valE
+        //exe_regA, exe_regAValue, exe_regB, exe_regBValue, 
+        decode_rA, decode_valA, decode_rB, decode_valB
+        //out_regAValue, out_regBValue 
+        fwd_regAValue, fwd_regBValue
+    );
+
 	execute e(
 		//from previous stage
-		decode_icode, decode_ifun, decode_rA, decode_rB, decode_valA, decode_valB, decode_valC, decode_valP, decode_pred,
+		decode_icode, decode_ifun, decode_rA, decode_rB, fwd_regAValue, fwd_regBValue, decode_valC, decode_valP, decode_pred,
 		//external
 		CLOCK_50, 
 		//to next stage
