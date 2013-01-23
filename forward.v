@@ -8,23 +8,23 @@ module fwd_2_execute(
     out_regAValue, out_regBValue 
 );
 
-    input applyMemFwd    [1:0];
-    input mem_regA       [3:0];
-    input mem_regAValue  [31:0];
-    input mem_regB       [3:0];
-    input mem_regBValue  [31:0];
+    input [1:0]     applyMemFwd;
+    input [3:0]     mem_regA;
+    input [31:0]    mem_regAValue;
+    input [3:0]     mem_regB;
+    input [31:0]    mem_regBValue;
 
-    input applyEx2Fwd;
-    input ex2_regA       [3:0];
-    input ex2_regAValue  [31:0];
+    input           applyEx2Fwd;
+    input [3:0]     ex2_regA;
+    input [31:0]    ex2_regAValue;
 
-    input exe_regA       [3:0];
-    input exe_regAValue  [31:0];
-    input exe_regB       [3:0];
-    input exe_regBValue  [31:0];
+    input [3:0]     exe_regA;
+    input [31:0]    exe_regAValue;
+    input [3:0]     exe_regB;
+    input [31:0]    exe_regBValue;
     
-    output out_regAValue[31:0];
-    output out_regBValue[31:0];
+    output [31:0]   out_regAValue;
+    output [31:0]   out_regBValue;
 
     case ({applyEx2Fwd, applyMemFwd}) begin
         'b000: begin
