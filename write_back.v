@@ -1,10 +1,26 @@
 
 module write_back(
 	//from previous stage
-	icode, rA, rB, valE, valM
+	icode, rA, rB, valE, valM,
 	//external
 	clock, regWrite1, regWrite2, regReg1, regReg2, regValue1, regValue2
 );
+
+	input [3:0] icode; 
+	input [3:0] rA; 
+	input [3:0] rB;
+	input [31:0] valE; 
+	input [31:0] valM;
+
+	input clock;
+	
+	output reg regWrite1;
+	output reg regWrite2;
+	output reg [3:0] regReg1;
+	output reg [3:0] regReg2;
+	output reg [31:0] regValue1;
+	output reg [31:0] regValue2;
+
 	always @ (posedge clock) begin
 		case (icode)
 			'h0: begin

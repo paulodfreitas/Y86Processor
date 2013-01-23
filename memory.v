@@ -1,13 +1,48 @@
 module memory(
+	stall,
 	//from previous stage
 	icode, rA, rB, valA, valE, valP,
 	//external
-	clock, read, write, value, access_blocked, 
+	clock, address, read, write, value, access_blocked, hb, lb, valueRead,
 	//to next stage
-	icode_out, rA_out, rB_out, valE_out, valM
+	icode_out, rA_out, rB_out, valE_out, valM,
+	//to fetch
+	waiting_ret_finished, pc_from_ret
 );
 	
+	input [3:0] icode;
+	input [3:0] rA;
+	input [3:0] rB; 
+	input [31:0] valA;
+	input [31:0] valE;
+	input [31:0] valP;
+	
+	input clock; 
+	output reg read; 
+	output reg write; 
+	output reg [15:0] value; 
+	input access_blocked;
+	output reg [31:0] address;
+	output reg hb, lb;
+	input [15:0] valueRead;
+	
+	output reg stall;
+	
+	output reg [3:0] icode_out; 
+	output reg [3:0] rA_out;
+	output reg [3:0] rB_out;
+	output reg [31:0] valE_out; 
+	output reg [31:0] valM;
+	
+	output reg waiting_ret_finished;
+	output reg [31:0] pc_from_ret;
+	
 	reg [31:0] handledX;
+	wire [31:0] memDest;
+	wire [31:0] memValue;
+	wire readOp;
+	wire writeOp;
+	wire aligned;
 	
 	initial begin
 		handledX <= 0;
@@ -29,7 +64,7 @@ module memory(
 				0: begin
 					if (readOp || writeOp) begin
 						stall <= 1;
-						adress <= memDest / 2;
+						address <= memDest / 2;
 						read <= readOp;
 						write <= writeOp;		
 						

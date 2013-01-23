@@ -1,4 +1,49 @@
-module execute();
+`include "alu.v"
+
+module execute(
+	//from previous stage
+	icode, ifun, rA, rB, valA, valB, valC, valP, pred,
+	//external
+	clock, 
+	//to next stage
+	icode_out, rA_out, rB_out, valA_out, valE, valP_out,
+	//to fetch
+	wrong_pred
+);
+
+	input [3:0] icode;
+	input [3:0] ifun; 
+	input [3:0] rA; 
+	input [3:0] rB;
+	input [31:0] valA; 
+	input [31:0] valB; 
+	input [31:0] valC; 
+	input [31:0] valP; 
+	input pred;
+
+	input clock;
+	
+	output reg [3:0] icode_out;
+	output reg [3:0] rA_out;
+	output reg [3:0] rB_out; 
+	output reg [31:0] valA_out; 
+	output reg [31:0] valE; 
+	output reg [31:0] valP_out;
+	output reg wrong_pred;
+	
+	reg Cnd;
+	reg [15:0] pred_table;
+	reg [15:0] aux_table;
+	reg [31:0] op1; 
+	reg [31:0] op2; 
+	reg [3:0] op; 
+	wire [31:0] result;
+	wire SF; 
+	wire ZF; 
+	wire OF;
+
+	//add declaration to ALU
+
 	initial begin
 		Cnd <= 0;
 	end
@@ -40,6 +85,16 @@ module execute();
 					5: Cnd <= ~ (SF ^ OF);
 					6: Cnd <= ~ (SF ^ OF) & ~ ZF;
 				endcase
+				
+				wrong_pred <= pred != Cnd;
+				
+				if (pred_table[valP[3:0]] == Cnd) begin
+					aux_table[valP[3:0]] <= Cnd;
+				end
+				else begin
+					pred_table[valP[3:0]] = aux_table[valP[3:0]];
+					aux_table[valP[3:0]] = Cnd;
+				end
 			end
 			8: begin
 				op1 <= valB;
@@ -64,7 +119,12 @@ module execute();
 		endcase
 		
 		valE <= result;
+		icode_out <= icode;
+		rA_out <= rA; 
+		rB_out <= rB; 
+		valA_out <= valA;
+		valP_out <= valP;
 	end
 	
-	ALU alu();
+	ALU alu(op1, op2, op, result, SF, ZF, OF);
 endmodule

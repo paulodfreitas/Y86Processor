@@ -1,13 +1,65 @@
-module fetch(pc);
+module fetch(
+	stall,
+	//to next stage
+	icode, ifun, rA, rB, valC, valP, pred, 
+	//external
+	clock, address, read, read_blocked, valueRead,
+	//from branch prediction
+	pred_table, wrong_pred,
+	//from "ret" processing
+	pc_from_ret, waiting_ret_finished
+);
+
+	input clock;
+	input [15:0] pred_table;
+	input wrong_pred;
+	input [31:0] pc_from_ret;
+	input waiting_ret_finished;
+	
+	input read_blocked;
+	input [15:0] valueRead;
+	
+	output reg [31:0] address;
+	output reg read;
+	
+	output reg [3:0] icode; 
+	output reg [3:0] ifun; 
+	output reg [3:0] rA; 
+	output reg [3:0] rB;
+	output reg [31:0] valC; 
+	output reg [31:0] valP; 
+	output reg pred;
+	output reg stall;
+	
+	reg [31:0] handledX;
+	reg [31:0] size;
+	reg [31:0] pc;
+	reg [31:0] otherPC;
+	reg waiting_ret;
+	reg aligned;
+	reg [47:0] inst;
+
 	initial begin
 		handledX <= 0;
 		size <= 50;
 		waiting_ret <= 0;
 	end
 	
+	function branch_pred;
+		input [31:0] pc;
+		begin
+			//the table has an index of 4 bits and a value of 2 bits
+			branch_pred = pred_table[pc[3:0] + 5]; 
+		end
+	endfunction
+	
 	always @ (posedge clock) begin
+		if (wrong_pred) begin
+			pc <= otherPC;
+		end
+	
 		if (read_blocked || waiting_ret && ~ waiting_ret_finished) begin
-			//stall etc
+			stall <= 1;
 		end
 		else begin
 			if (waiting_ret) begin
@@ -60,6 +112,7 @@ module fetch(pc);
 				read <= 0;
 				handledX <= 0;
 				waiting_ret <= icode == 9; 
+				size <= 50;
 				
 				case (size)
 					1: begin
@@ -108,9 +161,11 @@ module fetch(pc);
 							
 							if (pred) begin
 								pc <= valC;
+								otherPC <= pc + 5;
 							end 
 							else begin
 								pc <= pc + 5;
+								otherPC <= valC;
 							end
 						end
 						else begin
@@ -137,6 +192,8 @@ module fetch(pc);
 						end
 					end
 				endcase
+				
+				valP <= pc;
 			end
 		end
 	end
