@@ -9,6 +9,8 @@ module execute(
 	icode_out, rA_out, rB_out, valA_out, valE, valP_out,
 	//to fetch
 	wrong_pred
+    //to forwarding
+    , apply_forwarding
 );
 
 	input [3:0] icode;
@@ -30,7 +32,8 @@ module execute(
 	output reg [31:0] valE; 
 	output reg [31:0] valP_out;
 	output reg wrong_pred;
-	
+    output reg apply_forwarding;
+	    
 	reg Cnd;
 	reg [15:0] pred_table;
 	reg [15:0] aux_table;
@@ -46,6 +49,7 @@ module execute(
 
 	initial begin
 		Cnd <= 0;
+        apply_forwarding <= 0;
 	end
 
 	always @ (posedge clock) begin
@@ -54,26 +58,31 @@ module execute(
 				op1 <= 0;
 				op2 <= valA;
 				op <= 0;
+                apply_forwarding <= 1;
 			end
 			3: begin
 				op1 <= 0;
 				op2 <= valC;
 				op <= 0;
+                apply_forwarding <= 1;
 			end
 			4: begin
 				op1 <= valB;
 				op2 <= valC;
 				op <= 0;
+                apply_forwarding <= 0;
 			end
 			5: begin
 				op1 <= valB;
 				op2 <= valC;
 				op <= 0;
+                apply_forwarding <= 0;
 			end
 			6: begin
 				op1 <= valB;
 				op2 <= valA;
 				op <= ifun;
+                apply_forwarding <= 1;
 			end
 			7: begin
 				case (ifun)
@@ -95,26 +104,31 @@ module execute(
 					pred_table[valP[3:0]] = aux_table[valP[3:0]];
 					aux_table[valP[3:0]] = Cnd;
 				end
+                apply_forwarding <= 0;
 			end
 			8: begin
 				op1 <= valB;
 				op2 <= -4;
 				op <= 0;
+                apply_forwarding <= 1;
 			end
 			9: begin
 				op1 <= valB;
-				op2 <= -4;
+				op2 <= 4;
 				op <= 0;
+                apply_forwarding <= 1;
 			end
 			'hA: begin
 				op1 <= valB;
 				op2 <= -4;
 				op <= 0;
+                apply_forwarding <= 1;
 			end
 			'hB: begin
 				op1 <= valB;
 				op2 <= 4;
 				op <= 0;
+                apply_forwarding <= 1;
 			end
 		endcase
 		

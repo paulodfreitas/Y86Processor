@@ -110,6 +110,8 @@ module y86();
 
     wire [31:0] fwd_regAValue;
     wire [31:0] fwd_regBValue;
+    wire [1:0]  mem_apply_fwd;
+    wire        exe_apply_fwd;
 
 	reg clock_50;
 
@@ -151,9 +153,9 @@ module y86();
 	
     fwd_2_execute fwd2e(
         //applyMemFwd, mem_regA, mem_regAValue, mem_regB, mem_regBValue, 
-        1, mem_rA, mem_valM, mem_rB, mem_valE
+        mem_apply_fwd, mem_rA, mem_valM, mem_rB, mem_valE
         //applyEx2Fwd, ex2_regA, ex2_regAValue
-        1, exe_rB, exe_valE
+        exe_apply_fwd, exe_rB, exe_valE
         //exe_regA, exe_regAValue, exe_regB, exe_regBValue, 
         decode_rA, decode_valA, decode_rB, decode_valB
         //out_regAValue, out_regBValue 
@@ -169,6 +171,8 @@ module y86();
 		exe_icode, exe_rA, exe_rB, exe_valA, exe_valE, exe_valP,
 		//to fetch
 		exe_wrong_pred
+        // flag for fwd
+        , exe_apply_fwd
 	);
 	
 	memory m(
@@ -181,6 +185,8 @@ module y86();
 		mem_icode, mem_rA, mem_rB, mem_valE, mem_valM,
 		//to fetch
 		waiting_ret_finished, pc_from_ret
+        // flag for fwd
+        , mem_apply_fwd
 	);
 	
 	write_back wb(

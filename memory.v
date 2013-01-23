@@ -8,6 +8,8 @@ module memory(
 	icode_out, rA_out, rB_out, valE_out, valM,
 	//to fetch
 	waiting_ret_finished, pc_from_ret
+    //for fwd
+    , apply_forwarding
 );
 	
 	input [3:0] icode;
@@ -33,7 +35,9 @@ module memory(
 	output reg [3:0] rB_out;
 	output reg [31:0] valE_out; 
 	output reg [31:0] valM;
-	
+
+    output reg [1:0] apply_forwarding;	
+
 	output reg waiting_ret_finished;
 	output reg [31:0] pc_from_ret;
 	
@@ -138,5 +142,29 @@ module memory(
 				end
 			endcase
 		end
+    
+        
+        if(icode == 'hB) begin
+            apply_forwarding = 'b11;
+        end
+        else 
+            if(icode == 'h4) begin
+                apply_forwarding = 'b10
+            end
+            else
+                if(icode == 'h2
+                || icode == 'h3
+                || icode == 'h6
+                || icode == 'h8
+                || icode == 'h9
+                || icode == 'hA) begin
+                    apply_forwarding = 'b01
+                end
+                else
+                    apply_forwarding = 'b00
+                end
+            end
+        end
 	end
+
 endmodule
